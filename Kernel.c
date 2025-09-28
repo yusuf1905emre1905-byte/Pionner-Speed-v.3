@@ -88,3 +88,36 @@ void kernel_main() {
     // Bu satıra asla ulaşılmamalıdır!
     while(1) {} 
 }
+// =========================================================
+// PIONNEROS V3.0: SİSTEM ÇAĞRISI SUNUCUSU (kernel.c)
+// BÖLÜM 61: syscall_handler()
+// =========================================================
+
+// Uygulamaların isteyeceği hizmetlerin ID'leri (Örn: putstr)
+#define SYSCALL_ID_PUTS 1 
+#define SYSCALL_ID_EXIT 2
+// ... (Gelecekte buraya DISK OKUMA, MOUSE AL gibi ID'ler eklenecek)
+
+// Bu fonksiyon, INT 0x80 Assembly kesmesinden çağrılır (Assembly ile bağlanacak)
+void syscall_handler(unsigned int service_id, unsigned int arg1) {
+    
+    // Yüksek güvenlikli bir yerde (Ring 0) olduğumuzdan emin ol!
+    // (Bu kontrolü gelecekte Paging ile pekiştireceğiz.)
+
+    switch (service_id) {
+        case SYSCALL_ID_PUTS:
+            // Arg1'in bir string adresi olduğunu varsayalım
+            // puts((char*)arg1); // puts fonksiyonu güvenli bir şekilde çağrılır
+            puts("[SYSCALL]: Uygulama metin yazdirmayi istedi.\n");
+            break;
+        
+        case SYSCALL_ID_EXIT:
+            puts("[SYSCALL]: Uygulama cikis istedi. Gorev sonlandiriliyor.\n");
+            // Çekirdek burada görevi sonlandırma mekanizmasını çalıştırır.
+            break;
+
+        default:
+            puts("[SYSCALL_ERROR]: Gecersiz hizmet ID'si alindi!\n");
+            break;
+    }
+}
