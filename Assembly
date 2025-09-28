@@ -1,0 +1,32 @@
+; =========================================================
+; PIONNEROS V3.0: KULLANICI MODU GEÇİŞİ (hw_kernel.asm)
+; BÖLÜM 59: go_to_user_mode(entry_point, user_stack)
+; =========================================================
+
+global go_to_user_mode
+go_to_user_mode:
+    ; C'den gelen argümanlar: [ESP+4] = entry_point, [ESP+8] = user_stack
+    
+    ; 1. Kullanıcı Stack'ini Hazırla
+    ; Kullanıcı stack segmenti (0x23) ve stack pointer (ESP)
+    push 0x23         ; Kullanıcı Veri Segment Seçicisi (SS)
+    push [esp+8]      ; Kullanıcı Stack Pointer (ESP)
+
+    ; 2. EFLAGS Kaydını Hazırla
+    ; IF (Interrupt Enable) bitini (0x200) ayarlayarak kesmeleri aç.
+    push 0x200        ; EFLAGS (kesmeleri acik tut)
+
+    ; 3. Çekirdekten Dönüş Noktasını Hazırla
+    ; Kullanıcı Kod Segment Seçicisi (0x1B) ve Giriş Noktası (EIP)
+    push 0x1B         ; Kullanıcı Kod Segment Seçicisi (CS)
+    push [esp+16]     ; Uygulamanın başlangıç adresi (Entry Point)
+
+    ; 4. Kayıtları Temizle (Optional)
+    mov eax, 0
+    mov ebx, 0
+    mov ecx, 0
+    mov edx, 0
+
+    ; 5. Son Komut: IRET (Interrupt Return) ile Ring 0'dan Ring 3'e atla.
+    ; CPU, Stack'teki 5 değeri okuyarak Ring 3'e geçer.
+    iret
