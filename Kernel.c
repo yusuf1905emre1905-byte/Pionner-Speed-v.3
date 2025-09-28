@@ -258,4 +258,46 @@ void syscall_handler(unsigned int service_id, unsigned int arg1) {
     }
 }
 
+// =========================================================
+// PIONNEROS V3.0: VFS SUNUCUSUNU BAŞLATMA (kernel.c)
+// BÖLÜM 66: start_vfs_server()
+// =========================================================
+
+// VFS Sunucusunu temsil eden sabitler
+#define VFS_SERVER_PID 10 // Sanal Dosya Sistemi Sunucusuna sabit bir ID atayalim
+
+// Bu fonksiyon, VFS Sunucusunu (ayrı bir uygulama olarak) başlatır.
+void start_vfs_server() {
+    puts("\n[VFS]: Sanal Dosya Sistemi Sunucusu (VFS.SERVER) yukleniyor...\n");
+
+    // NOT: Gerçekte burada bir loader (yukleyici) uygulamayı RAM'e yuklerdi.
+    
+    // 1. Yeni görevi zamanlayıcıya ekle (Scheduler)
+    // schedule_new_task(VFS_SERVER_PID, VFS_SERVER_ENTRY_POINT, Ring 3); 
+
+    // 2. VFS Sunucusunun Ana Döngüsü
+    puts("[VFS]: VFS.SERVER Kullanici Modunda baslatildi. Mesaj bekliyor...\n");
+
+    // Çekirdek artık VFS'yi yapmaz, sadece IPC mesajlarını yönlendirir.
+}
+
+
+// kernel_main'i son kez güncelleyelim:
+void kernel_main() {
+    // ... (GDT, IDT, PAGING init kodları) ...
+
+    // V3.0: Paging'i aç
+    init_paging(); 
+
+    // V3.0: Hibrit Çekirdek Modülerliği - VFS Sunucusunu başlat
+    start_vfs_server();
+
+    // V3.0: İlk uygulamayı güvenli modda (Ring 3) başlat
+    start_user_app(); 
+
+    // Çekirdek döngüsü: Sonsuza kadar sadece IPC, Kesmeleri ve Zamanlamayı yönetir.
+    while(1) {
+        // ... Zamanlayıcıyı kontrol et, Kesmeleri işle ...
+    } 
+}
 
