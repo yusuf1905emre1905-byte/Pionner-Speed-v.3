@@ -40,3 +40,51 @@ void set_user_memory(unsigned int virt_addr, unsigned int phys_addr, int num_pag
         puts("[MEM ISO]: Kullanici alani sayfa adresi ayarlandi.\n");
     }
 }
+// =========================================================
+// PIONNEROS V3.0: KULLANICI UYGULAMASI BAŞLATICI (kernel.c)
+// BÖLÜM 60: start_user_app()
+// =========================================================
+
+// Harici Assembly fonksiyonları
+extern void go_to_user_mode(unsigned int entry_point, unsigned int user_stack);
+
+// Basitlik için, kullanıcı kodunun 1MB'dan başladığını varsayalım.
+#define USER_APP_ENTRY_POINT 0x100000 
+// Kullanıcı uygulaması için Stack (Yüksek adresten başlar ve aşağı doğru büyür)
+#define USER_STACK_TOP 0x200000 
+
+void start_user_app() {
+    puts("\n[SCHEDULER]: Yeni Kullanici Gorevi Olusturuluyor...\n");
+
+    // 1. Kullanıcı Belleğini Ayır ve Eşle
+    // Basitlik için, 1MB'lık alanı (yaklaşık 256 sayfa) kullanıcı alanı olarak işaretle
+    set_user_memory(USER_APP_ENTRY_POINT, USER_APP_ENTRY_POINT, 256);
+    
+    // Uygulama kodu, USER_APP_ENTRY_POINT'e yüklenmiş olmalıdır.
+    // (Gerçek OS'ta buraya diskten okuma kodu gelirdi, biz simülasyon yapıyoruz.)
+    
+    // 2. CPU'yu Ring 3'e Geçir ve Uygulamayı Başlat
+    puts("[RING 3]: Ayrıcalık Seviyesi Düşürülüyor. Pong basliyor...\n");
+    
+    // Assembly fonksiyonunu çağır: 
+    // go_to_user_mode(Uygulamanın başlangıç adresi, Kullanıcının Stack Adresi)
+    go_to_user_mode(USER_APP_ENTRY_POINT, USER_STACK_TOP);
+
+    // DİKKAT: Bu noktadan sonra kod çekirdeğe geri dönmez,
+    // Kullanıcı Modunda Pong veya AI çalışmaya başlar.
+    // Geri dönüş ancak bir Kesme (Interrupt) veya Hata (Exception) ile olur.
+}
+
+// kernel_main'i güncelleyelim: Paging'i açtıktan sonra uygulamayı başlat.
+void kernel_main() {
+    // ... (GDT, IDT, PIC init kodlarınız buraya gelir) ...
+
+    // V3.0: Paging'i aç
+    init_paging(); 
+
+    // V3.0: İlk uygulamayı güvenli modda (Ring 3) başlat
+    start_user_app(); 
+
+    // Bu satıra asla ulaşılmamalıdır!
+    while(1) {} 
+}
